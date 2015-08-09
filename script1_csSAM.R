@@ -79,6 +79,17 @@ DEGs <- topTable(fit, coef = "CasevsControl", number = nrow(dge), adjust.method 
 genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
 DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
 write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="Limma_voom", append=TRUE)
+# Analysis with combined voom and sample quality weights
+plotMDS(dge, labels=y, col=y, main="MDS plot")
+legend("topright", legend=c("Control", "Case"), col=1:2, pch=15)
+vwts <- voomWithQualityWeights(dge, design=design, normalization="none", plot=TRUE)
+vfit2 <- lmFit(vwts)
+vfit2 <- eBayes(vfit2)
+topTable(vfit2,coef=2,sort.by="P")
+DEGs <- topTable(fit, coef = "CasevsControl", number = nrow(dge), adjust.method = "none", p.value = 0.01)
+genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
+DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
+write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="Limma_voomwts", append=TRUE)
 
 ## Cell type-specific csSAM analysis, FPKM
 set.seed(1)
