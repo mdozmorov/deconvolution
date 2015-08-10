@@ -2,8 +2,6 @@ library(samr)
 library(csSAM)
 library(DESeq2)
 library(CellMix)
-library(limma)
-library(edgeR)
 
 library("xlsx")
 library(biomaRt)
@@ -60,36 +58,6 @@ siggenes.dn <- siggenes.table$genes.lo
 genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=siggenes.dn[, "Gene Name"], mart = mart)
 siggenes <- left_join(data.frame(siggenes.dn, AVEXP=rowMeans(G.raw[ siggenes.dn[, "Gene Name"], ,drop=F]), SD=rowSds(G.raw[ siggenes.dn[, "Gene Name"], , drop=F])), genes, by=c("Gene.Name" = "ensembl_gene_id"))
 write.xlsx(siggenes, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="SAM_counts", append=TRUE)
-
-## Heterogeneous Limma-voom-edgeR analysis
-# Use 'G.raw' and 'y' objects 
-G.raw <- G.raw[ !apply(G.raw, 1, function(x) sum(x <= 0) >= 1 ), ]
-# Prepare design matrix
-Group <- factor(y, levels=c(1, 2))
-design <- model.matrix(~Group)
-colnames(design) <- c("Control", "CasevsControl")
-# Differential expression
-dge <- DGEList(counts = G.raw)
-dge <- calcNormFactors(dge)
-v <- voom(dge, design, plot = TRUE)
-fit <- lmFit(v, design)
-fit <- eBayes(fit)
-topTable(fit, coef="CasevsControl", adjust="BH")
-DEGs <- topTable(fit, coef = "CasevsControl", number = nrow(dge), adjust.method = "none", p.value = 0.01)
-genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
-DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
-write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="Limma_voom", append=TRUE)
-# Analysis with combined voom and sample quality weights
-plotMDS(dge, labels=y, col=y, main="MDS plot")
-legend("topright", legend=c("Control", "Case"), col=1:2, pch=15)
-vwts <- voomWithQualityWeights(dge, design=design, normalization="none", plot=TRUE)
-vfit2 <- lmFit(vwts)
-vfit2 <- eBayes(vfit2)
-topTable(vfit2,coef=2,sort.by="P")
-DEGs <- topTable(fit, coef = "CasevsControl", number = nrow(dge), adjust.method = "none", p.value = 0.01)
-genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
-DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
-write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="Limma_voomwts", append=TRUE)
 
 ## Cell type-specific csSAM analysis, FPKM
 set.seed(1)
