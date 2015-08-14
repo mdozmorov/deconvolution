@@ -2,6 +2,7 @@ library(samr)
 library(csSAM)
 library(DESeq2)
 library(CellMix)
+library(reshape2)
 
 library("xlsx")
 library(biomaRt)
@@ -90,12 +91,15 @@ write.xlsx(siggenes, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName = "Monocytes",
 
 
 ## Cell type-specific csSAM analysis, random data
-# set.seed(1)
+source("simulation_high.r")
+source("mtx.rand.R")
+set.seed(1)
+G.rnd <- matrix(gener.cond(counts = rowMeans(G), noise = 0.1, nrepl = 20), ncol = 20)
 # res.sam.rnd <- csSamWrapper(mtx.rand(t(G), randomize = "mix"), mtx.rand(cc, randomize = "mix"), sample(y),fileName = "RNA-seq/Figures/Figure_csSAM_FPKM_rand_mix.pdf")
 # set.seed(1)
 # res.sam.rnd <- csSamWrapper(mtx.rand(t(G), randomize = "rnd"), mtx.rand(cc, randomize = "mix"), sample(y), fileName = "RNA-seq/Figures/Figure_csSAM_FPKM_rand_rnd.pdf")
 set.seed(1)
-res.sam.rnd <- csSamWrapper(t(mtx.rand(G, randomize = "row")), mtx.rand(cc, randomize = "mix"), sample(y), fileName = "RNA-seq/Figures/Figure_csSAM_FPKM_rand_row.pdf")
+res.sam.rnd <- csSamWrapper(t(G.rnd), mtx.rand(cc, randomize = "mix"), sample(y), fileName = "RNA-seq/Figures/Figure_csSAM_FPKM_randNB.pdf")
 
 
 # ## Correlation of cell types with FPKM counts
