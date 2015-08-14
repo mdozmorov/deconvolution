@@ -91,8 +91,8 @@ write.xlsx(siggenes, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName = "Monocytes",
 
 
 ## Cell type-specific csSAM analysis, random data
-source("simulation_high.r")
-source("mtx.rand.R")
+source("functions/simulation_high.r")
+source("functions/mtx.rand.R")
 set.seed(1)
 G.rnd <- matrix(gener.cond(counts = rowMeans(G), noise = 0.1, nrepl = 20), ncol = 20)
 # res.sam.rnd <- csSamWrapper(mtx.rand(t(G), randomize = "mix"), mtx.rand(cc, randomize = "mix"), sample(y),fileName = "RNA-seq/Figures/Figure_csSAM_FPKM_rand_mix.pdf")
