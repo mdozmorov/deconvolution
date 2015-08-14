@@ -15,12 +15,8 @@ ddsHTSEQ <- readDDS(DIR)
 dds <- DESeq(ddsHTSEQ)
 res <- results(dds, contrast = c("condition", "Case", "Control"))
 res <- res[complete.cases(res), ]
-res.sig <- res[res$padj < 0.1 & abs(res$log2FoldChange) > 0, ]
 
-dim(res)
-summary(res)
-genes <- getBM(attributes=c('ensembl_gene_id', 'external_gene_name', 'description'), filters='ensembl_gene_id', values=rownames(res.sig), mart=mart, uniqueRows=T)
-ressig.gene <- merge(as.data.frame(res.sig), genes, by.x="row.names", by.y=1, all.x=T, sort=FALSE)
-ressig.gene <- data.frame(ressig.gene, AVEXP=rowMeans(assay(ddsHTSEQ)[ ressig.gene$Row.names, , drop=F]), SD=rowSds(assay(ddsHTSEQ)[ ressig.gene$Row.names, , drop=F]))
-# Write results to file
-write.xlsx(ressig.gene, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="DESeq2_counts", append=TRUE)
+DEGs <- res[res$padj < 0.25 & abs(res$log2FoldChange) > 0, ]
+genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
+DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
+write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="DESeq2_counts", append=TRUE)
