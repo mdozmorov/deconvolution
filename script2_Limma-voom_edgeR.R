@@ -61,3 +61,12 @@ DEGs <- DEGs[ DEGs$PValue < 0.01, ]
 genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
 DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
 write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="edgeR_glm", append=TRUE)
+
+# NOISeq heterogeneous analysis
+library("NOISeq")
+mtx <- NOISeq::readData(data = count.matrix, factors=sampleTable)
+NOISeq.test <- noiseqbio(mtx, k = 0.5, norm = "tmm", factor = "condition")
+DEGs = degenes(NOISeq.test, q = 0.8, M = NULL)
+genes <- getBM(attributes = c('ensembl_gene_id', 'hgnc_symbol', 'description'), filters='ensembl_gene_id', values=rownames(DEGs), mart = mart)
+DEGs <- left_join(data.frame(GENE = rownames(DEGs), DEGs), genes, by = c("GENE" = "ensembl_gene_id"))
+write.xlsx(DEGs, "RNA-seq/Tables/Table_csSAM.xlsx", sheetName ="NOISeq", append=TRUE)
