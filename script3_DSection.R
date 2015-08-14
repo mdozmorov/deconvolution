@@ -37,12 +37,12 @@ res.dsection <- readRDS("RNA-seq/data/res.dsection.Rds")
 # res.dsection <- readRDS("RNA-seq/data/res.dsection.rnd.Rds")
 # Random data, row simulations
 set.seed(1)
-Y.rnd <- t(mtx.rand(G[, !apply(G, 2, function(x) sum(x <= 0) >= 1) ], randomize = "col"))
+Y.rnd <- G.rnd
 p0.rnd <- t(mtx.rand(cc, randomize = "row"))
 y.rnd <- sample(y)
 res.dsection.rnd <- CellMix::DSection(Y.rnd, p0.rnd, groups=y.rnd, W0=10, W_proposal=100, nSamples=250, nBurnIn=1000, summarize=TRUE, verbose=TRUE)
-saveRDS(res.dsection.rnd, "RNA-seq/data/res.dsection.rnd.row.Rds")
-res.dsection <- readRDS("RNA-seq/data/res.dsection.rnd.row.Rds")
+saveRDS(res.dsection.rnd, "RNA-seq/data/res.dsection.rnd.NB.Rds")
+res.dsection <- readRDS("RNA-seq/data/res.dsection.rnd.NB.Rds")
 # # Random filtered data, 1250 simulations
 # set.seed(1)
 # Y.rnd <- t(mtx.rand(G[, !apply(G, 2, function(x) sum(x <= 0) >= 1) ], randomize = "mix"))
